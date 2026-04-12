@@ -21,7 +21,19 @@ export function useWahaApi() {
       apiKey.value = data.apiKey || "";
       baseUrl.value =
         typeof window !== "undefined" ? window.location.origin : "";
-    } catch {
+    } catch (err: unknown) {
+      // 401 = not logged in → redirect to login page
+      const status =
+        err &&
+        typeof err === "object" &&
+        "status" in err &&
+        typeof (err as { status: unknown }).status === "number"
+          ? (err as { status: number }).status
+          : 0;
+      if (status === 401 && typeof window !== "undefined") {
+        window.location.href = "/dashboard/login.html";
+        return;
+      }
       baseUrl.value =
         typeof window !== "undefined" ? window.location.origin : "";
     }
