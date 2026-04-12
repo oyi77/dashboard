@@ -8,6 +8,12 @@ export default defineNuxtConfig({
     buildAssetsDir: "/_nuxt/",
     head: {
       title: "WAHA Dashboard",
+      script: [
+        {
+          src: "/dashboard/plus-nav.js",
+          defer: true,
+        },
+      ],
       link: [
         {
           rel: "preconnect",
