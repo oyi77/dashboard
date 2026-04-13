@@ -15,37 +15,75 @@
           <div class="settings-row">
             <div class="settings-info">
               <div class="settings-label">Auto-restart on boot</div>
-              <div class="settings-desc">Automatically restart sessions when WAHA starts</div>
+              <div class="settings-desc">
+                Automatically restart sessions when WAHA starts
+              </div>
             </div>
             <label class="toggle-switch">
-              <input v-model="settings.autoRestartOnBoot" type="checkbox" />
+              <input v-model="sessionLc.autoRestartOnBoot" type="checkbox" />
               <span class="toggle-slider" />
             </label>
           </div>
           <div class="settings-row">
             <div class="settings-info">
               <div class="settings-label">Auto-restart failed sessions</div>
-              <div class="settings-desc">Automatically restart sessions that enter FAILED state</div>
+              <div class="settings-desc">
+                Automatically restart sessions that enter FAILED state
+              </div>
             </div>
             <label class="toggle-switch">
-              <input v-model="settings.autoRestartFailed" type="checkbox" />
+              <input v-model="sessionLc.autoRestartFailed" type="checkbox" />
               <span class="toggle-slider" />
             </label>
           </div>
           <div class="settings-row">
             <div class="settings-info">
+              <div class="settings-label">
+                Restart all sessions (not just this worker)
+              </div>
+              <div class="settings-desc">
+                When enabled, restarts every session regardless of worker
+                assignment
+              </div>
+            </div>
+            <label class="toggle-switch">
+              <input v-model="sessionLc.restartAllSessions" type="checkbox" />
+              <span class="toggle-slider" />
+            </label>
+          </div>
+          <div class="settings-row">
+            <div class="settings-info">
+              <div class="settings-label">Auto-start delay (seconds)</div>
+              <div class="settings-desc">
+                Wait time before auto-starting sessions on boot
+              </div>
+            </div>
+            <input
+              v-model.number="sessionLc.autoStartDelay"
+              type="number"
+              min="0"
+              max="300"
+              class="settings-number"
+            />
+          </div>
+          <div class="settings-row">
+            <div class="settings-info">
               <div class="settings-label">Default engine</div>
-              <div class="settings-desc">Engine used when creating sessions without explicit selection</div>
+              <div class="settings-desc">
+                Engine used when creating sessions without explicit selection
+              </div>
             </div>
             <select v-model="settings.defaultEngine" class="settings-select">
               <option value="">Auto (recommended)</option>
-              <option v-for="eng in engines" :key="eng" :value="eng">{{ eng }}</option>
+              <option v-for="eng in engines" :key="eng" :value="eng">
+                {{ eng }}
+              </option>
             </select>
           </div>
         </div>
         <div class="settings-actions">
           <button class="btn-primary" :disabled="saving" @click="saveSettings">
-            {{ saving ? 'Saving…' : 'Save Settings' }}
+            {{ saving ? "Saving…" : "Save Settings" }}
           </button>
         </div>
       </div>
@@ -57,15 +95,23 @@
           <div class="settings-row">
             <div class="settings-info">
               <div class="settings-label">Username</div>
-              <div class="settings-desc">{{ currentSettings.username || '—' }} ({{ currentSettings.source }})</div>
+              <div class="settings-desc">
+                {{ dashboardSettings.username || "—" }} ({{
+                  dashboardSettings.source
+                }})
+              </div>
             </div>
           </div>
           <div class="settings-row">
             <div class="settings-info">
               <div class="settings-label">Change credentials</div>
-              <div class="settings-desc">Update dashboard username and password</div>
+              <div class="settings-desc">
+                Update dashboard username and password
+              </div>
             </div>
-            <button class="btn-secondary" @click="showCredentials = true">Change</button>
+            <button class="btn-secondary" @click="showCredentials = true">
+              Change
+            </button>
           </div>
         </div>
       </div>
@@ -77,7 +123,9 @@
           <div class="settings-row">
             <div class="settings-info">
               <div class="settings-label">Worker ID</div>
-              <div class="settings-desc mono">{{ serverStatus?.worker?.id ?? 'default' }}</div>
+              <div class="settings-desc mono">
+                {{ serverStatus?.worker?.id ?? "default" }}
+              </div>
             </div>
           </div>
           <div class="settings-row">
@@ -85,16 +133,6 @@
               <div class="settings-label">Uptime</div>
               <div class="settings-desc mono">{{ uptimeFormatted }}</div>
             </div>
-          </div>
-          <div class="settings-row">
-            <div class="settings-info">
-              <div class="settings-label">Restart sessions on boot</div>
-              <div class="settings-desc">Worker will auto-restart assigned sessions when reconnecting</div>
-            </div>
-            <label class="toggle-switch">
-              <input v-model="settings.restartOnBoot" type="checkbox" />
-              <span class="toggle-slider" />
-            </label>
           </div>
         </div>
       </div>
@@ -106,7 +144,9 @@
           <div class="settings-row">
             <div class="settings-info">
               <div class="settings-label">Version</div>
-              <div class="settings-desc mono">{{ serverStatus?.version ?? '—' }}</div>
+              <div class="settings-desc mono">
+                {{ serverStatus?.version ?? "—" }}
+              </div>
             </div>
           </div>
           <div class="settings-row">
@@ -124,7 +164,11 @@
     </div>
 
     <!-- Change Credentials Modal -->
-    <div v-if="showCredentials" class="modal-overlay" @click.self="showCredentials = false">
+    <div
+      v-if="showCredentials"
+      class="modal-overlay"
+      @click.self="showCredentials = false"
+    >
       <div class="modal-box">
         <div class="modal-title">Change Credentials</div>
         <div class="form-group">
@@ -140,9 +184,20 @@
           <input v-model="credForm.newPassword" type="password" />
         </div>
         <div style="display: flex; gap: 10px; margin-top: 20px">
-          <button class="btn-secondary" style="flex: 1" @click="showCredentials = false">Cancel</button>
-          <button class="btn-primary" style="flex: 1" :disabled="credSaving" @click="saveCredentials">
-            {{ credSaving ? 'Saving…' : 'Save' }}
+          <button
+            class="btn-secondary"
+            style="flex: 1"
+            @click="showCredentials = false"
+          >
+            Cancel
+          </button>
+          <button
+            class="btn-primary"
+            style="flex: 1"
+            :disabled="credSaving"
+            @click="saveCredentials"
+          >
+            {{ credSaving ? "Saving…" : "Save" }}
           </button>
         </div>
       </div>
@@ -150,14 +205,16 @@
 
     <!-- Toast for errors -->
     <div v-if="credError" class="toast-error">{{ credError }}</div>
-    <div v-if="credSuccess" class="toast-success">Credentials updated successfully!</div>
+    <div v-if="credSuccess" class="toast-success">
+      Credentials updated successfully!
+    </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, computed, onMounted } from 'vue';
-import { useWahaApi } from '~/composables/useWahaApi';
-import { useToast } from '~/composables/useToast';
+import { ref, reactive, computed, onMounted } from "vue";
+import { useWahaApi } from "~/composables/useWahaApi";
+import { useToast } from "~/composables/useToast";
 
 interface ServerStatus {
   startTimestamp: number;
@@ -166,9 +223,16 @@ interface ServerStatus {
   version?: string;
 }
 
-interface Settings {
+interface DashboardSettings {
   username: string;
   source: string;
+}
+
+interface SessionLcSettings {
+  autoRestartOnBoot: boolean;
+  autoRestartFailed: boolean;
+  restartAllSessions: boolean;
+  autoStartDelay: number;
 }
 
 const { get, put } = useWahaApi();
@@ -177,24 +241,30 @@ const { success, error } = useToast();
 const engines = ref<string[]>([]);
 const saving = ref(false);
 const serverStatus = ref<ServerStatus | null>(null);
-const currentSettings = ref<Settings>({ username: '', source: '' });
+const dashboardSettings = ref<DashboardSettings>({ username: "", source: "" });
 
 const showCredentials = ref(false);
 const credSaving = ref(false);
-const credError = ref('');
+const credError = ref("");
 const credSuccess = ref(false);
 
-const settings = reactive({
+// Session lifecycle settings from API (persisted to DB)
+const sessionLc = reactive<SessionLcSettings>({
   autoRestartOnBoot: true,
   autoRestartFailed: false,
-  defaultEngine: '',
-  restartOnBoot: true,
+  restartAllSessions: false,
+  autoStartDelay: 0,
+});
+
+// Local UI preferences (not persisted to server)
+const settings = reactive({
+  defaultEngine: "",
 });
 
 const credForm = reactive({
-  currentPassword: '',
-  newUsername: '',
-  newPassword: '',
+  currentPassword: "",
+  newUsername: "",
+  newPassword: "",
 });
 
 const uptimeFormatted = computed(() => {
@@ -212,92 +282,92 @@ const uptimeFormatted = computed(() => {
 
 async function load() {
   try {
-    const [status, settingsData, engList] = await Promise.allSettled([
-      get<ServerStatus>('/api/server/status'),
-      get<Settings>('/api/dashboard/settings'),
-      get<{ name: string }[]>('/api/engines'),
-    ]);
+    const [status, dashSettings, engList, lcSettings] =
+      await Promise.allSettled([
+        get<ServerStatus>("/api/server/status"),
+        get<DashboardSettings>("/api/dashboard/settings"),
+        get<{ name: string }[]>("/api/engines"),
+        get<SessionLcSettings>("/api/settings/sessions"),
+      ]);
 
-    if (status.status === 'fulfilled') {
+    if (status.status === "fulfilled") {
       serverStatus.value = status.value;
     }
-    if (settingsData.status === 'fulfilled') {
-      currentSettings.value = settingsData.value;
+    if (dashSettings.status === "fulfilled") {
+      dashboardSettings.value = dashSettings.value;
     }
-    if (engList.status === 'fulfilled') {
+    if (engList.status === "fulfilled") {
       engines.value = engList.value.map((e) => e.name);
     }
+    if (lcSettings.status === "fulfilled") {
+      sessionLc.autoRestartOnBoot = lcSettings.value.autoRestartOnBoot;
+      sessionLc.autoRestartFailed = lcSettings.value.autoRestartFailed;
+      sessionLc.restartAllSessions = lcSettings.value.restartAllSessions;
+      sessionLc.autoStartDelay = lcSettings.value.autoStartDelay;
+    }
   } catch (err) {
-    error('Failed to load settings');
+    error("Failed to load settings");
   }
 }
 
 async function saveSettings() {
   saving.value = true;
   try {
-    // Note: WAHA doesn't have a general settings API for these options.
-    // This is a UI-only save for user preferences stored in localStorage.
-    localStorage.setItem('waha_settings', JSON.stringify({
-      autoRestartOnBoot: settings.autoRestartOnBoot,
-      autoRestartFailed: settings.autoRestartFailed,
-      defaultEngine: settings.defaultEngine,
-      restartOnBoot: settings.restartOnBoot,
-    }));
-    success('Settings saved');
+    await put("/api/settings/sessions", {
+      autoRestartOnBoot: sessionLc.autoRestartOnBoot,
+      autoRestartFailed: sessionLc.autoRestartFailed,
+      restartAllSessions: sessionLc.restartAllSessions,
+      autoStartDelay: sessionLc.autoStartDelay,
+    });
+    success("Settings saved");
   } catch {
-    error('Failed to save settings');
+    error("Failed to save settings");
   } finally {
     saving.value = false;
   }
 }
 
 async function saveCredentials() {
-  credError.value = '';
-  if (!credForm.currentPassword || !credForm.newUsername || !credForm.newPassword) {
-    credError.value = 'All fields are required';
+  credError.value = "";
+  if (
+    !credForm.currentPassword ||
+    !credForm.newUsername ||
+    !credForm.newPassword
+  ) {
+    credError.value = "All fields are required";
     return;
   }
   if (credForm.newPassword.length < 6) {
-    credError.value = 'Password must be at least 6 characters';
+    credError.value = "Password must be at least 6 characters";
     return;
   }
   credSaving.value = true;
   try {
-    await put('/api/dashboard/settings/credentials', {
+    await put("/api/dashboard/settings/credentials", {
       currentPassword: credForm.currentPassword,
       newUsername: credForm.newUsername,
       newPassword: credForm.newPassword,
     });
     credSuccess.value = true;
     showCredentials.value = false;
-    credForm.currentPassword = '';
-    credForm.newUsername = '';
-    credForm.newPassword = '';
-    setTimeout(() => { credSuccess.value = false; }, 3000);
+    credForm.currentPassword = "";
+    credForm.newUsername = "";
+    credForm.newPassword = "";
+    setTimeout(() => {
+      credSuccess.value = false;
+    }, 3000);
   } catch (err: unknown) {
-    const msg = (err as { data?: { message?: string } })?.data?.message ?? 'Failed to update credentials';
+    const msg =
+      (err as { data?: { message?: string } })?.data?.message ??
+      "Failed to update credentials";
     credError.value = msg;
   } finally {
     credSaving.value = false;
   }
 }
 
-function loadSavedSettings() {
-  try {
-    const saved = localStorage.getItem('waha_settings');
-    if (saved) {
-      const parsed = JSON.parse(saved);
-      if ('autoRestartOnBoot' in parsed) settings.autoRestartOnBoot = parsed.autoRestartOnBoot;
-      if ('autoRestartFailed' in parsed) settings.autoRestartFailed = parsed.autoRestartFailed;
-      if ('defaultEngine' in parsed) settings.defaultEngine = parsed.defaultEngine;
-      if ('restartOnBoot' in parsed) settings.restartOnBoot = parsed.restartOnBoot;
-    }
-  } catch {}
-}
-
 onMounted(() => {
   load();
-  loadSavedSettings();
 });
 </script>
 
@@ -375,6 +445,22 @@ onMounted(() => {
   border-color: var(--accent);
 }
 
+.settings-number {
+  padding: 6px 10px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--text);
+  font-size: 13px;
+  min-width: 80px;
+  text-align: center;
+}
+
+.settings-number:focus {
+  outline: none;
+  border-color: var(--accent);
+}
+
 .settings-actions {
   margin-top: 16px;
   padding-top: 16px;
@@ -405,7 +491,7 @@ onMounted(() => {
 }
 
 .toggle-slider::before {
-  content: '';
+  content: "";
   position: absolute;
   height: 16px;
   width: 16px;
