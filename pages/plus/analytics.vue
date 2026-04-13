@@ -83,7 +83,7 @@
         <text
           v-for="(d, i) in chartData.filter((_, j) => j % labelStep === 0)"
           :key="i"
-          :x="xPos(i * labelStep)"
+          :x="xPos(i * labelStep, chartData.length)"
           :y="chartH - 4"
           text-anchor="middle"
           fill="rgba(134,239,172,0.4)"
@@ -225,11 +225,11 @@ const labelStep = computed(() =>
 );
 
 function maxVal(arr: number[]): number {
-  return Math.max(...arr, 1);
+  const clean = arr.filter((n) => isFinite(n) && !isNaN(n));
+  return Math.max(...clean, 1);
 }
 
-function xPos(i: number): number {
-  const n = chartData.value.length;
+function xPos(i: number, n: number): number {
   return n <= 1 ? chartW / 2 : (i / (n - 1)) * (chartW - 40) + 20;
 }
 
@@ -239,20 +239,24 @@ function yPos(val: number, maxV: number): number {
 
 function linePath(vals: number[]): string {
   if (vals.length === 0) return "";
-  const maxV = maxVal(vals);
-  return vals
-    .map((v, i) => `${i === 0 ? "M" : "L"}${xPos(i)},${yPos(v, maxV)}`)
+  const safe = vals.map((v) => (isFinite(Number(v)) ? Number(v) : 0));
+  const maxV = maxVal(safe);
+  const n = safe.length;
+  return safe
+    .map((v, i) => `${i === 0 ? "M" : "L"}${xPos(i, n)},${yPos(v, maxV)}`)
     .join(" ");
 }
 
 function areaPath(vals: number[]): string {
   if (vals.length === 0) return "";
-  const maxV = maxVal(vals);
-  const line = vals
-    .map((v, i) => `${i === 0 ? "M" : "L"}${xPos(i)},${yPos(v, maxV)}`)
+  const safe = vals.map((v) => (isFinite(Number(v)) ? Number(v) : 0));
+  const maxV = maxVal(safe);
+  const n = safe.length;
+  const line = safe
+    .map((v, i) => `${i === 0 ? "M" : "L"}${xPos(i, n)},${yPos(v, maxV)}`)
     .join(" ");
-  const last = vals.length - 1;
-  return `${line} L${xPos(last)},${chartH - padB} L${xPos(0)},${chartH - padB} Z`;
+  const last = safe.length - 1;
+  return `${line} L${xPos(last, n)},${chartH - padB} L${xPos(0, n)},${chartH - padB} Z`;
 }
 
 function formatTs(ts: number): string {

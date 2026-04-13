@@ -74,13 +74,14 @@ const terminalBody = ref<HTMLElement | null>(null);
 
 let ws: WebSocket | null = null;
 let reconnectTimer: ReturnType<typeof setTimeout> | null = null;
+let unmounted = false;
 
 function formatTime(date: Date) {
   return date.toTimeString().split(" ")[0];
 }
 
 function connect() {
-  if (typeof window === "undefined") return;
+  if (typeof window === "undefined" || unmounted) return;
 
   const protocol = window.location.protocol === "https:" ? "wss:" : "ws:";
   const wsUrl = `${protocol}//${window.location.host}/ws`;
@@ -89,12 +90,16 @@ function connect() {
     ws = new WebSocket(wsUrl);
 
     ws.onopen = () => {
+      if (unmounted) {
+        ws?.close();
+        return;
+      }
       connected.value = true;
       pushLog("system", "connection", `Connected to ${wsUrl}`);
     };
 
     ws.onmessage = (message) => {
-      if (paused.value) return;
+      if (paused.value || unmounted) return;
 
       try {
         const data = JSON.parse(message.data);
@@ -118,6 +123,7 @@ function connect() {
 
     ws.onclose = () => {
       connected.value = false;
+      if (unmounted) return;
       pushLog("system", "connection", "Disconnected. Reconnecting in 3s...");
       scheduleReconnect();
     };
@@ -127,11 +133,12 @@ function connect() {
     };
   } catch (err) {
     error("Failed to initialize WebSocket");
-    scheduleReconnect();
+    if (!unmounted) scheduleReconnect();
   }
 }
 
 function scheduleReconnect() {
+  if (unmounted) return;
   if (reconnectTimer) clearTimeout(reconnectTimer);
   reconnectTimer = setTimeout(() => {
     connect();
@@ -180,10 +187,21 @@ onMounted(() => {
 });
 
 onUnmounted(() => {
+  unmounted = true;
   if (reconnectTimer) clearTimeout(reconnectTimer);
   if (ws) {
+    ws.onopen = null;
+    ws.onmessage = null;
+    ws.onerror = null;
     ws.onclose = null; // prevent reconnect loop
-    ws.close();
+    // Only close if not already closed/closing
+    if (
+      ws.readyState === WebSocket.OPEN ||
+      ws.readyState === WebSocket.CONNECTING
+    ) {
+      ws.close();
+    }
+    ws = null;
   }
 });
 </script>
