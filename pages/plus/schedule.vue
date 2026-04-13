@@ -157,7 +157,9 @@ async function loadSessions() {
     if (sessions.value.length > 0 && !form.session) {
       form.session = sessions.value[0];
     }
-  } catch {}
+  } catch {
+    error("Failed to load sessions");
+  }
 }
 
 async function loadScheduled() {

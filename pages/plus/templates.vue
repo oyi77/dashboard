@@ -265,7 +265,7 @@ async function sendTemplate() {
   }
 }
 
-onMounted(() => {
-  Promise.allSettled([loadTemplates(), loadSessions()]);
+onMounted(async () => {
+  await Promise.allSettled([loadTemplates(), loadSessions()]);
 });
 </script>
